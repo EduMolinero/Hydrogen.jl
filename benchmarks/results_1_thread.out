@@ -1,0 +1,11 @@
+Benchmarking...
+n = 10000, d = 0.05
+Julia threads: 1
+op_sum_before_rk no GraphBLAS
+  65.780 ms (34 allocations: 153.76 MiB)
+op_sum_after_rk no GraphBLAS
+  19.208 ms (58 allocations: 2.21 MiB)
+op_sum_before_rk using GraphBLAS
+  158.870 ms (549 allocations: 452.43 MiB)
+op_sum_after_rk using GraphBLAS
+  40.344 ms (1002 allocations: 159.64 MiB)
