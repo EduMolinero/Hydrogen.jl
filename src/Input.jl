@@ -5,38 +5,86 @@ Structure in which all the input information is contained. It is used repetively
 `T` is a parametric Julia type.
 """
 struct Input{T <: Number, S <: Number}
-    model::Dict{String,String}
+    model::Dict{String,AbstractString}
     physical_params::Dict{String,Union{Nothing,T}}
     numerical_params::Dict{String,Union{Nothing,S,T}}
     calculation_details::Dict{String, Union{Nothing,Bool}}
 end
 
+# Overloading of the print function for union dictionary
 for S in [Number, AbstractString, Bool]
     function Base.show(io::IO, dict::Dict{String,Union{Nothing, T}}) where T <: S
-        for key in keys(dict)
-            println(" ", key," => ", dict[key])
+        if isempty(dict)
+            println(io, "$(typeof(dict))()")
+            return
         end
-        return nothing
+        # Convert keys and values to strings and collect as tuples.
+        items = [(string(k), string(v)) for (k, v) in dict]
+        # Sort items by the key's string representation.
+        sorted_items = sort(items, by = x -> x[1])
+        
+        # Determine the maximum widths of the keys and values.
+        key_width   = maximum(length.(getindex.(sorted_items, 1)))
+        value_width = maximum(length.(getindex.(sorted_items, 2)))
+        separator   = " : "
+        inner_width = key_width + length(separator) + value_width
+    
+        # Build the box borders using Unicode box-drawing characters.
+        top_border    = "┌" * repeat("─", inner_width) * "┐"
+        bottom_border = "└" * repeat("─", inner_width) * "┘"
+    
+        # Print the box.
+        println(io, top_border)
+        for (k, v) in sorted_items
+            line = "│" * rpad(k, key_width) * separator * rpad(v, value_width) * "│"
+            println(io, line)
+        end
+        println(io, bottom_border)
     end
 end
 
-
-function Base.show(io::IO, dict::Dict{String, String})
-    for key in keys(dict)
-        println(" ", key," => ", dict[key])
+function Base.show(io::IO, dict::Dict{String,AbstractString})
+    if isempty(dict)
+        println(io, "$(typeof(dict))()")
+        return
     end
-    return nothing
+    # Convert keys and values to strings and collect as tuples.
+    items = [(string(k), string(v)) for (k, v) in dict]
+    # Sort items by the key's string representation.
+    sorted_items = sort(items, by = x -> x[1])
+    
+    # Determine the maximum widths of the keys and values.
+    key_width   = maximum(length.(getindex.(sorted_items, 1)))
+    value_width = maximum(length.(getindex.(sorted_items, 2)))
+    separator   = " : "
+    inner_width = key_width + length(separator) + value_width
+
+    # Build the box borders using Unicode box-drawing characters.
+    top_border    = "┌" * repeat("─", inner_width) * "┐"
+    bottom_border = "└" * repeat("─", inner_width) * "┘"
+
+    # Print the box.
+    println(io, top_border)
+    for (k, v) in sorted_items
+        line = "│" * rpad(k, key_width) * separator * rpad(v, value_width) * "│"
+        println(io, line)
+    end
+    println(io, bottom_border)
 end
 
-#Overloading of the print function for the struct
-#TO DO: Improve the way it prints the input.
+# Overloading of the print function for the struct
 function Base.show(io::IO, input::Input)
-    for field in fieldnames(Input)
-        printstyled(" $field :\n", color = :light_green)
-        println(" $(getfield(input,field))")
-    end
-    return nothing
+    println("Model:")
+    println(input.model)
+    println("Physical Parameters:")
+    println(input.physical_params)
+    println("Numerical Parameters:")
+    println(input.numerical_params)
+    println("Calculation Details:")
+    println(input.calculation_details)
 end
+
+
 
 """
     GoodParser(str)
@@ -98,7 +146,7 @@ end
 function PhysParams(ini_file)
 
     #Read the section [Physical Parameters] from an INI file and get its fields as a dictionary.
-    #Currently, it only works in atomic units. TO DO: implement automatic unit conversion.
+    #Currently, it only works in atomic units. 
     #To not include some variable, just type not included in the INI file.
 
     #Mandatory params.
@@ -106,32 +154,32 @@ function PhysParams(ini_file)
     E0 = IniParserUnits(ini_file, "Physical Parameters", "Laser amplitude")
     τ = IniParserUnits(ini_file, "Physical Parameters", "Laser Tau")
     if any(x -> x === nothing, [ω, E0, τ])
-        error("Mandatory parameters must be specified in input file!!")
+        error("Mandatory para  meters must be specified in input file!!")
     end
 
     #Optional params.
-    hBN_gap = IniParserUnits(ini_file, "Physical Parameters", "Band gap")
-    E_exciton = IniParserUnits(ini_file, "Physical Parameters", "Exciton energy")
-    if any(x -> x === nothing, [hBN_gap, E_exciton])
+    Gap = IniParserUnits(ini_file, "Physical Parameters", "Gap")
+    E1_energy = IniParserUnits(ini_file, "Physical Parameters", "Energy E1")
+    if any(x -> x === nothing, [Gap, E1_energy])
         @info "Some optional variables are missing. This may cause an error afterwards."
     end
     
-    return Dict("ω" => ω, "E0" => E0, "τ" => τ, "hBN_gap" => hBN_gap, "E_exciton" => E_exciton) 
+    return Dict("ω" => ω, "E0" => E0, "τ" => τ, "Gap" => Gap, "E1_energy" => E1_energy) 
 end
 
 function BooleanVars(ini_file)
     #Reads the section [Calculation Details] from the INI file. 
-    #The fields are boolean variables related to the details of the calculation.
     projected_bool = IniParserType(ini_file, "Calculation Details", "Rydberg calculation", Bool)
     timeprop_bool = IniParserType(ini_file, "Calculation Details", "Time propagation", Bool)
     optim_bool_no_ryd = IniParserType(ini_file, "Calculation Details", "Optimization No Rydbergs", Bool)
     optim_bool_ryd = IniParserType(ini_file, "Calculation Details", "Optimization Rydbergs", Bool)
-    php_calc_bool = IniParserType(ini_file, "Calculation Details", "PHP calculation", Bool)
-    if any(x -> x === nothing, [projected_bool, timeprop_bool, optim_bool_no_ryd, optim_bool_ryd, php_calc_bool])
+
+    if any(x -> x === nothing, [projected_bool, timeprop_bool, optim_bool_no_ryd, optim_bool_ryd])
         error("Some specifications on which calculations you want to make are missing!")
     end
     return Dict("projected_bool" => projected_bool, "timeprop_bool" => timeprop_bool, 
-                    "optim_bool_no_ryd" => optim_bool_no_ryd, "optim_bool_ryd" => optim_bool_ryd, "php_calc_bool" => php_calc_bool)
+                    "optim_bool_no_ryd" => optim_bool_no_ryd, "optim_bool_ryd" => optim_bool_ryd,
+                    )
 end
 
 function NumParams(ini_file)
@@ -155,8 +203,7 @@ end
 @inline function ModelInfo(ini_file)
     #Read the section [Model] from an INI file. Furthermore, it loads information specific to that model.
     laser_type  = IniFile.get(ini_file, "Model", "Laser type")
-    potential_type  = IniFile.get(ini_file, "Model", "Potential type")
-    return Dict("laser type" => laser_type, "potential type" => potential_type)
+    return Dict("laser type" => laser_type)
 end
 
 
@@ -170,8 +217,6 @@ Reads the input parameters from an INI file divided in various sections. These a
     · [Calculation Details]  --> Specific details of the calculation we want to do.
 """
 function ReadInput(filename::String)
-    printstyled(" -->  ", color = :light_cyan)
-    printstyled("Reading the input\n", color = :light_cyan)
     ini_file = IniFile.read(IniFile.Inifile(),filename)
     #Obtain the model
     model = ModelInfo(ini_file)
@@ -181,7 +226,7 @@ function ReadInput(filename::String)
     calculation_details = BooleanVars(ini_file)
     #Create the struct
     input = Input{Float64,Int}(model, phys_param, num_param, calculation_details)
-    println(" The given input is:                                (Remainder: all physical quantities are given in atomic units)")
+    println("The given input is:              (Remainder: all physical quantities are given in atomic units)")
     print(input) 
     return input
 end

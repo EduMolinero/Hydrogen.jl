@@ -1,4 +1,3 @@
-using Optim
 using LinearAlgebra, SparseArrays, Arpack
 using BenchmarkTools
 using SuiteSparseGraphBLAS  

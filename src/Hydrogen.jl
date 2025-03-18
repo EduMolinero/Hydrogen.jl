@@ -10,15 +10,16 @@ module Hydrogen
     using Parsers
     using Optim
     using MKLSparse
+    using Printf
     import IniFile
 
-    include("constants.jl")
-    include("input.jl")
-    include("model.jl")
-    include("laser.jl")
-    include("timeprop.jl")
-    include("plotting.jl")
-    include("fourier.jl")
-    include("main.jl")
+    include("Constants.jl")
+    include("Input.jl")
+    include("Model.jl")
+    include("Laser.jl")
+    include("Timeprop.jl")
+    include("Plotting.jl")
+    include("Fourier.jl")
+    include("Main.jl")
     
 end
