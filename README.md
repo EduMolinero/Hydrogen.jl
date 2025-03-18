@@ -9,3 +9,6 @@ The use of the module is rather simple: it only needs an `input_file.ini` file (
 ```julia
 include("Hydrogen.jl")
 Hydrogen.solve_dynamics("input_file.ini")
+```
+
+To perform a multithreaded calculation one needs to set up the threads variable in `Julia` through the `-t NUM_THREADS` option.
