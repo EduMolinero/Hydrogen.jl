@@ -11,14 +11,14 @@ This folder contains an input file for a simple High Harmonic Generation (HHG) s
 This folder contains code that performs two parallel calculations:
 
 1. One without any Rydberg states between the ground state and the continuum.
-2. One with a single Rydberg state at energy $(E_1$).
+2. One with a single Rydberg state at energy $E_1$.
 
 ### Purpose
 
-The goal is to optimize the parameters $(a$) and $($\eta$) of the soft-core potential to ensure the correct value of the energy levels:
+The goal is to optimize the parameters $a$ and $\eta$ of the soft-core potential to ensure the correct value of the energy levels:
 
 - The ground state energy should match the $\Delta$ value provided in both cases.
-- The first excited state should either be pushed into the continuum or set to $(E_1$).
+- The first excited state should either be pushed into the continuum or set to $E_1$.
 
 ### Process
 
